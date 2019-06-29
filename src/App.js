@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import ApolloClient from "apollo-boost";
 import { ApolloProvider, Query } from "react-apollo";
@@ -11,50 +10,18 @@ const client = new ApolloClient({
   uri: "https://48p1r2roz4.sse.codesandbox.io"
 });
 
-const ExchangeRates = ({ setCurrency }) => (
-  <Query
-    query={gql`
-      {
-        rates(currency: "USD") {
-          currency
-          rate
-        }
-      }
-    `}
-  >
-    {({ loading, error, data }) => {
-      if (loading) return <p>Loading...</p>;
-      if (error) return <p>Error :(</p>;
-
-      setCurrency(data.rates);
-
-      return data.rates.map(({ currency, rate }) => (
-
-        <div className="App">
-          <header className="App-header">
-            <div key={currency}>
-              <p>
-                {currency}: {rate}
-              </p>
-            </div>
-          </header>
+const ExchangeRates = ({ rates }) =>
+  rates.map(({ currency, rate }) => (
+    <div className="App">
+      <header className="App-header">
+        <div key={currency}>
+          <p>
+            {currency}: {rate}
+          </p>
         </div>
-
-      ));
-    }}
-  </Query>
-);
-
-// const App = () => (
-//   <ApolloProvider client={client}>
-//     <div>
-//     <img src={logo} className="App-logo" alt="logo" />
-
-//       <h2>My first Apollo app 🚀</h2>
-//       <ExchangeRates />
-//     </div>
-//   </ApolloProvider>
-// );
+      </header>
+    </div>
+  ))
 
 
 const objeto_teste = new Teste;
@@ -176,41 +143,45 @@ class App extends React.Component {
     });
   };
 
-  setCurrency = (data) => {
-    if (!this.state.suggestions.length) {
-      this.setState({
-        suggestions: data
-          .map(item => ({ name: item.currency }))
-      });
-    }
-  }
-
   render() {
-    const { value, suggestions } = this.state;
+    const { value } = this.state;
     const inputProps = {
       placeholder: "Type 'c'",
       value,
       onChange: this.onChange
     };
 
-      
-
     return (
-
       <ApolloProvider client={client}>
-      {/* <div>
-      <img src={logo} className="App-logo" alt="logo" />
-        <h2>My first Apollo app 🚀</h2>
-      </div> */}
+        <Query
+          query={gql`
+            {
+              rates(currency: "USD") {
+                currency
+                rate
+              }
+            }
+          `}
+        >
+          {({ loading, error, data }) => {
+            if (loading) return <p>Loading...</p>;
+            if (error) return <p>Error</p>;
+            
+            return (
+              <>
+                <Autosuggest 
+                suggestions={data.rates.map(item => ({ name: item.currency }))}
+                onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                getSuggestionValue={getSuggestionValue}
+                renderSuggestion={renderSuggestion}
+                inputProps={inputProps} />
+                <ExchangeRates rates={data.rates}/>
+              </>
+            );
+          }}
+        </Query>
     
-      <Autosuggest 
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-        getSuggestionValue={getSuggestionValue}
-        renderSuggestion={renderSuggestion}
-        inputProps={inputProps} />
-         <ExchangeRates setCurrency={this.setCurrency} />
         </ApolloProvider>
     );
   }
