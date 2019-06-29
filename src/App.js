@@ -11,7 +11,7 @@ const client = new ApolloClient({
   uri: "https://48p1r2roz4.sse.codesandbox.io"
 });
 
-const ExchangeRates = () => (
+const ExchangeRates = ({ setCurrency }) => (
   <Query
     query={gql`
       {
@@ -25,6 +25,8 @@ const ExchangeRates = () => (
     {({ loading, error, data }) => {
       if (loading) return <p>Loading...</p>;
       if (error) return <p>Error :(</p>;
+
+      setCurrency(data.rates);
 
       return data.rates.map(({ currency, rate }) => (
 
@@ -152,7 +154,7 @@ class App extends React.Component {
 
     this.state = {
       value: '',
-      suggestions: []
+      suggestions: [],
     };    
   }
 
@@ -173,6 +175,15 @@ class App extends React.Component {
       suggestions: []
     });
   };
+
+  setCurrency = (data) => {
+    if (!this.state.suggestions.length) {
+      this.setState({
+        suggestions: data
+          .map(item => ({ name: item.currency }))
+      });
+    }
+  }
 
   render() {
     const { value, suggestions } = this.state;
@@ -199,7 +210,7 @@ class App extends React.Component {
         getSuggestionValue={getSuggestionValue}
         renderSuggestion={renderSuggestion}
         inputProps={inputProps} />
-         <ExchangeRates />
+         <ExchangeRates setCurrency={this.setCurrency} />
         </ApolloProvider>
     );
   }
